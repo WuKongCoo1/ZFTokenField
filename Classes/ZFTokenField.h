@@ -29,6 +29,8 @@
 - (void)tokenFieldDidBeginEditing:(ZFTokenField *)tokenField;
 - (BOOL)tokenFieldShouldEndEditing:(ZFTokenField *)textField;
 - (void)tokenFieldDidEndEditing:(ZFTokenField *)tokenField;
+- (void)tokenFieldSelectDetailButton:(ZFTokenField *)tokenField;
+- (void)tokenFieldSelectAddContactButton:(ZFTokenField *)tokenField;
 @end
 
 @interface ZFTokenField : UIControl
@@ -37,6 +39,10 @@
 @property (nonatomic, weak) IBOutlet id<ZFTokenFieldDelegate> delegate;
 
 @property (nonatomic, strong, readonly) ZFTokenTextField *textField;
+
+@property (nonatomic, assign) BOOL showPlusButton;
+@property (nonatomic, assign) NSInteger maxContact;
+@property (nonatomic, assign) BOOL showDetaileButton;
 
 - (void)reloadData;
 - (NSUInteger)numberOfToken;

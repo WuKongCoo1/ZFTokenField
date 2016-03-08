@@ -51,6 +51,10 @@
 @property (nonatomic, strong) NSMutableArray *tokenViews;
 
 @property (nonatomic, strong) NSString *tempTextFieldText;
+
+@property (nonatomic, strong) UIButton *plusButton;
+
+@property (nonatomic, strong) UIButton *detailButton;
 @end
 
 @implementation ZFTokenField
@@ -80,6 +84,7 @@
 
 - (void)setup
 {
+    self.maxContact = CGFLOAT_MAX;
     self.clipsToBounds = YES;
     [self addTarget:self action:@selector(focusOnTextField) forControlEvents:UIControlEventTouchUpInside];
     
@@ -88,6 +93,17 @@
     self.textField.backgroundColor = [UIColor clearColor];
     self.textField.delegate = self;
     [self.textField addTarget:self action:@selector(textFieldDidChange:) forControlEvents:UIControlEventEditingChanged];
+    
+    _detailButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    _detailButton.frame = (CGRect){0, 0, 40, 30};
+    [_detailButton setTitle:@"······" forState:UIControlStateNormal];
+    [_detailButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+    [_detailButton addTarget:self action:@selector(detailBtnClicked:) forControlEvents:UIControlEventTouchUpInside];
+    
+    _plusButton = [UIButton buttonWithType:UIButtonTypeContactAdd];
+    _plusButton.frame = CGRectMake(0, 0, 30, 30);
+    [_plusButton addTarget:self action:@selector(addContactButtonClicked:) forControlEvents:UIControlEventTouchUpInside];
+    
     
     [self reloadData];
 }
@@ -128,6 +144,14 @@
     }
     self.tokenViews = [NSMutableArray array];
     
+    //添加title
+    UILabel *titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 60, 30)];
+    titleLabel.contentMode = UIViewContentModeCenter;
+    titleLabel.text = @"收信人";
+
+    [self.tokenViews addObject:titleLabel];
+    [self addSubview:titleLabel];
+
     if (self.dataSource) {
         NSUInteger count = [self.dataSource numberOfTokenInField:self];
         for (int i = 0 ; i < count ; i++) {
@@ -138,9 +162,25 @@
         }
     }
     
+     //添加详情按钮
+    if (self.tokenViews.count >= 11 && self.showDetaileButton == YES) {
+        [self.tokenViews addObject:_detailButton];
+        [self addSubview: _detailButton];
+    }
+    
+    //添加按钮
+    if (self.showPlusButton == YES) {
+        [self.tokenViews addObject:_plusButton];
+        [self addSubview: _plusButton];
+    }
+    
+    //添加输入框
     [self.tokenViews addObject:self.textField];
     [self addSubview:self.textField];
     self.textField.frame = (CGRect) {0,0,50,[self.dataSource lineHeightForTokenInField:self]};
+    
+    
+    
     
     [self invalidateIntrinsicContentSize];
     [self.textField setText:@""];
@@ -186,6 +226,15 @@
                 size.width = CGRectGetWidth(self.bounds);
             }
             token.frame = (CGRect){{x, y}, size};
+        }
+        
+        NSInteger index = [self.tokenViews indexOfObject:token];
+        
+        if (self.maxContact < index && token != self.textField && token != self.plusButton && token != self.detailButton) {
+            token.hidden = YES;
+            continue;
+        }else{
+            token.hidden = NO;
         }
         
         block((CGRect){x, y, tokenWidth, token.frame.size.height});
@@ -254,6 +303,21 @@
         [self.delegate tokenField:self didReturnWithText:textField.text];
     }
     return YES;
+}
+
+
+- (void)detailBtnClicked:(UIButton *)sender
+{
+    if ([self.delegate respondsToSelector:@selector(tokenFieldSelectDetailButton:)]) {
+        [self.delegate tokenFieldSelectDetailButton:self];
+    }
+}
+
+- (void)addContactButtonClicked:(UIButton *)sender
+{
+    if ([self.delegate respondsToSelector:@selector(tokenFieldSelectAddContactButton:)]) {
+        [self.delegate tokenFieldSelectAddContactButton:self];
+    }
 }
 
 @end
